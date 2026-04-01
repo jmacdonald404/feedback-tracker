@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { fetchPublishedFeedback, type SortOption, type CategoryFilter, type StatusFilter } from "@/lib/actions/queries";
+import { getUserVotes } from "@/lib/actions/votes";
 import { FeedbackCard } from "@/components/feedback-card";
 import { FeedbackFilters } from "@/components/feedback-filters";
 import { Pagination } from "@/components/pagination";
@@ -23,6 +24,7 @@ async function FeedbackList({ searchParams }: { searchParams: Awaited<PageProps[
   const status = (searchParams.status ?? "ALL") as StatusFilter;
 
   const result = await fetchPublishedFeedback({ page, sort, category, status });
+  const votedPostIds = await getUserVotes(result.posts.map((p) => p.id));
 
   if (result.posts.length === 0) {
     return (
@@ -48,7 +50,7 @@ async function FeedbackList({ searchParams }: { searchParams: Awaited<PageProps[
       </p>
       <div className="space-y-3">
         {result.posts.map((post) => (
-          <FeedbackCard key={post.id} post={post} />
+          <FeedbackCard key={post.id} post={post} voted={votedPostIds.has(post.id)} />
         ))}
       </div>
       <Pagination page={result.page} totalPages={result.totalPages} />

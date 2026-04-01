@@ -1,9 +1,12 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { fetchFeedbackById } from "@/lib/actions/queries";
+import { getUserVotes } from "@/lib/actions/votes";
 import { StatusBadge } from "@/components/status-badge";
 import { CategoryBadge } from "@/components/category-badge";
-import { ThumbsUp, MessageSquare, ArrowLeft } from "lucide-react";
+import { VoteButton } from "@/components/vote-button";
+import { CommentForm } from "@/components/comment-form";
+import { MessageSquare, ArrowLeft } from "lucide-react";
 
 function timeAgo(date: Date): string {
   const seconds = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
@@ -30,6 +33,9 @@ export default async function FeedbackDetailPage({ params }: PageProps) {
     notFound();
   }
 
+  const votedPostIds = await getUserVotes([post.id]);
+  const hasVoted = votedPostIds.has(post.id);
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
       <Link
@@ -43,11 +49,12 @@ export default async function FeedbackDetailPage({ params }: PageProps) {
       <div className="mt-4 rounded-lg border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-950">
         {/* Header */}
         <div className="flex flex-wrap items-start gap-4">
-          <div className="flex flex-col items-center gap-1 rounded-lg border border-neutral-200 px-3 py-2 dark:border-neutral-800">
-            <ThumbsUp className="h-5 w-5 text-neutral-400" />
-            <span className="text-lg font-bold">{post.voteCount}</span>
-            <span className="text-xs text-neutral-500">votes</span>
-          </div>
+          <VoteButton
+            postId={post.id}
+            initialVoteCount={post.voteCount}
+            initialVoted={hasVoted}
+            size="lg"
+          />
           <div className="flex-1">
             <h1 className="text-2xl font-bold">{post.title}</h1>
             <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -91,16 +98,20 @@ export default async function FeedbackDetailPage({ params }: PageProps) {
         )}
       </div>
 
-      {/* Comments section (read-only for now, interactive in Phase 4) */}
+      {/* Comments section */}
       <div className="mt-8">
         <h2 className="flex items-center gap-2 text-lg font-semibold">
           <MessageSquare className="h-5 w-5" />
           Comments ({post.comments.length})
         </h2>
 
+        <div className="mt-4">
+          <CommentForm postId={post.id} />
+        </div>
+
         {post.comments.length === 0 ? (
           <p className="mt-4 text-sm text-neutral-500">
-            No comments yet. Sign in to be the first to comment.
+            No comments yet. Be the first to comment!
           </p>
         ) : (
           <div className="mt-4 space-y-4">
