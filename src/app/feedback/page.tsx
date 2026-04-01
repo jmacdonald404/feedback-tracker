@@ -4,6 +4,7 @@ import { getUserVotes } from "@/lib/actions/votes";
 import { FeedbackCard } from "@/components/feedback-card";
 import { FeedbackFilters } from "@/components/feedback-filters";
 import { Pagination } from "@/components/pagination";
+import { SearchInput } from "@/components/search-input";
 import { MessageSquare } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ interface PageProps {
     sort?: string;
     category?: string;
     status?: string;
+    q?: string;
   }>;
 }
 
@@ -23,7 +25,9 @@ async function FeedbackList({ searchParams }: { searchParams: Awaited<PageProps[
   const category = (searchParams.category ?? "ALL") as CategoryFilter;
   const status = (searchParams.status ?? "ALL") as StatusFilter;
 
-  const result = await fetchPublishedFeedback({ page, sort, category, status });
+  const search = searchParams.q ?? "";
+
+  const result = await fetchPublishedFeedback({ page, sort, category, status, search });
   const votedPostIds = await getUserVotes(result.posts.map((p) => p.id));
 
   if (result.posts.length === 0) {
@@ -32,8 +36,8 @@ async function FeedbackList({ searchParams }: { searchParams: Awaited<PageProps[
         <MessageSquare className="mx-auto h-12 w-12 text-neutral-300 dark:text-neutral-700" />
         <h3 className="mt-4 text-lg font-medium">No feedback found</h3>
         <p className="mt-2 text-sm text-neutral-500">
-          {category !== "ALL" || status !== "ALL"
-            ? "Try adjusting your filters."
+          {category !== "ALL" || status !== "ALL" || search
+            ? "Try adjusting your filters or search."
             : "Be the first to submit feedback!"}
         </p>
         <Link href="/submit" className="mt-4 inline-block">
@@ -92,6 +96,12 @@ export default async function FeedbackPage({ searchParams }: PageProps) {
         <Link href="/submit">
           <Button size="sm">Submit Feedback</Button>
         </Link>
+      </div>
+
+      <div className="mb-4">
+        <Suspense>
+          <SearchInput />
+        </Suspense>
       </div>
 
       <div className="mb-6">

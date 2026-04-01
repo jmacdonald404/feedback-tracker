@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSession, signIn, signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { MessageSquare, LogIn, LogOut, Shield, Menu, X } from "lucide-react";
 import { useState } from "react";
 
@@ -36,6 +37,7 @@ export function Navbar() {
         </div>
 
         <div className="hidden items-center gap-3 md:flex">
+          <ThemeToggle />
           {status === "loading" ? (
             <div className="h-8 w-20 animate-pulse rounded bg-neutral-200 dark:bg-neutral-800" />
           ) : session ? (

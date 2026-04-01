@@ -20,6 +20,7 @@ interface FetchFeedbackParams {
   sort?: SortOption;
   category?: CategoryFilter;
   status?: StatusFilter;
+  search?: string;
 }
 
 export async function fetchPublishedFeedback({
@@ -27,6 +28,7 @@ export async function fetchPublishedFeedback({
   sort = "newest",
   category = "ALL",
   status = "ALL",
+  search = "",
 }: FetchFeedbackParams = {}) {
   const where: Record<string, unknown> = { isPublished: true };
 
@@ -35,6 +37,12 @@ export async function fetchPublishedFeedback({
   }
   if (status !== "ALL") {
     where.status = status;
+  }
+  if (search.trim()) {
+    where.OR = [
+      { title: { contains: search.trim(), mode: "insensitive" } },
+      { description: { contains: search.trim(), mode: "insensitive" } },
+    ];
   }
 
   const orderBy = (() => {
